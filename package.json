@@ -1,15 +1,32 @@
 {
-  "name": "pramesh_security_backend",
+  "name": "server_site",
   "version": "1.0.0",
+  "description": "An api for E-commerce application.",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
+  "author": "Pramesh Pathak",
   "license": "ISC",
-  "description": "",
   "dependencies": {
-    "nodemon": "^3.1.9"
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^7.1.0",
+    "https": "^1.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^7.8.0",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.9.16",
+    "uuid": "^9.0.1",
+    "winston": "^3.14.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
   }
 }
