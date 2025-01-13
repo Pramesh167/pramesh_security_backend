@@ -1,28 +1,50 @@
-require('dotenv').config();
-const mongoose = require('mongoose');
 const express = require('express');
-const fs = require('fs');
-const https = require('https');
-
-const app = require('./app');
-
-const uri = process.env.MONGODB_URI;
-console.log('MongoDB URI:', uri); // Add this line to verify the URI is being loaded
-
-if (!uri) {
-  console.error('MongoDB URI is not defined. Check your .env file.');
-  process.exit(1);
-}
-
-mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => {
-    console.log('Connected to the database');
-  })
-  .catch((error) => {
-    console.error('Failed to connect to the database:', error.message);
-    process.exit(1);
-  });
+const mongoose = require('mongoose');
+const Database = require('./database/database');
+const dotenv = require('dotenv');
+const cors = require('cors')
+const fileUpload = require('express-fileupload');
+const { options } = require('./routes/userRoutes');
+const app = express();
 
 
-const port = process.env.PORT || 4000;
-server.listen(port, () => console.log(`Server is running on port ${port}`));
+const corsOptions ={
+    origin : true,
+    credentials : true,
+    optionSuccessStatus : 200
+ }
+
+app.use(cors(corsOptions))
+
+
+app.use(express.json())
+
+app.use(fileUpload());
+
+app.use(express.static('./public'));
+
+
+
+dotenv.config()
+
+Database()
+
+
+const PORT = process.env.PORT;
+
+app.get('/Robsell',(req,res)=>{
+    res.send('Test API is Working!....')
+}) 
+
+
+app.use('/api/user', require('./routes/userRoutes'))
+
+
+
+app.listen(PORT, ()=>{
+    console.log(`Server is Running on port ${PORT} !`)
+}) 
+
+
+module.exports = app;
+
