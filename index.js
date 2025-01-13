@@ -38,6 +38,7 @@ app.get('/Robsell',(req,res)=>{
 
 
 app.use('/api/user', require('./routes/userRoutes'))
+app.use('/api/product', require('./routes/productRoutes'))
 
 
 
