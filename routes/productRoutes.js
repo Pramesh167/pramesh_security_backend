@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const productController = require('../controllers/productControllers');
+const productController = require('../controllers/productController');
 const { authGuard, adminGuard } = require('../middleware/authGuard');
 
 // Create a new product
@@ -9,7 +9,7 @@ router.post('/create', productController.createProduct);
 router.get('/get_all_products', authGuard, productController.getAllProducts);
 
 // Get products by category
-router.get('/get_products_by_category/', productController.getProductsByCategory);
+router.get('/get_products_by_category', productController.getProductsByCategory);
 
 // Delete a product (protected route with adminGuard middleware)
 router.delete('/delete_product/:id', adminGuard, productController.deleteProduct);

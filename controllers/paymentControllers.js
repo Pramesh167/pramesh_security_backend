@@ -1,7 +1,7 @@
 const {
     initializeKhaltiPayment,
     verifyKhaltiPayment,
-  } = require("../service/khaltiService");
+  } = require("../service/khaltiServices");
   const Payment = require("../models/paymentModel");
   const OrderModel = require("../models/orderModel");
   

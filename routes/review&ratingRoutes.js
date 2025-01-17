@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const reviewandratingController = require('../controllers/review&ratingControllers');
+const reviewandratingController = require('../controllers/reviews&ratingController');
 const { authGuard, adminGuard } = require('../middleware/authGuard');
 
 //post reviews
