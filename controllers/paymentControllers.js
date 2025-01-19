@@ -59,7 +59,7 @@ const {
         purchase_order_id: OrderModelData._id, // purchase_order_id because we need to verify it later
         purchase_order_name: productNames,
         return_url: `${process.env.BACKEND_URI}/api/khalti/complete-khalti-payment`,
-        website_url: website_url || "http://localhost:3000",
+        website_url: website_url || "https://localhost:3000",
       });
   
       // Update the payment record with the transactionId and pidx

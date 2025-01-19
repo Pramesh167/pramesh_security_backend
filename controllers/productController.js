@@ -23,6 +23,20 @@ const createProduct = async (req, res) => {
       message: "Please enter all details!",
     });
   }
+  //validate price and quantity
+  if(productPrice <0 ){
+    return res.status(400).json({
+      success: false,
+      message: "Please enter a valid price!",
+    });
+  }
+  if(productQuantity <0 ){
+    return res.status(400).json({
+      success: false,
+      message: "Please enter a valid quantity!",
+    });
+  }
+
   var imageName = null;
 
   try {
