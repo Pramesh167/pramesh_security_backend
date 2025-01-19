@@ -73,53 +73,85 @@ const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-      return res.status(400).json({
-          success: false,
-          message: 'Please enter all the fields'
-      });
+    return res.status(400).json({
+      success: false,
+      message: 'Please enter all the fields',
+    });
   }
 
   try {
-      const user = await userModel.findOne({ email: email });
+    const user = await User.findOne({ email: email });
 
-      if (!user) {
-          return res.status(400).json({
-              success: false,
-              message: "Email Doesn't Exist !"
-          });
-      }
-
-      const isValidPassword = await bcrypt.compare(password, user.password);
-
-      if (!isValidPassword) {
-          return res.status(400).json({
-              success: false,
-              message: "Password Doesn't Match !"
-          });
-      }
-
-      const token = await jwt.sign(
-          {
-              id: user._id, isAdmin: user.isAdmin
-          },
-          process.env.JWT_SECRET
-      );
-
-      return res.status(200).json({
-          success: true,
-          message: 'User Logged in Successfully!',
-          token: token,
-          userData: user
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Email Doesn't Exist!",
       });
+    }
 
-  } catch (error) {
-      console.log(error);
-      return res.status(500).json({
+    // Check if account is locked
+    if (user.lockUntil && user.lockUntil > Date.now()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Account is temporarily locked. Please try again later.',
+      });
+    }
+
+    // Verify password
+    const isValidPassword = await bcrypt.compare(password, user.password);
+
+    if (!isValidPassword) {
+      // Increment login attempts
+      user.loginAttempts = (user.loginAttempts || 0) + 1;
+
+      // Lock account if attempts exceed 2
+      if (user.loginAttempts >= 2) {
+        user.lockUntil = Date.now() + 5 * 60 * 1000; // Lock for 5 minutes
+        await user.save();
+
+        return res.status(403).json({
           success: false,
-          message: 'Internal Server Error'
+          message: 'Account locked for 5 minutes due to multiple failed attempts.',
+        });
+      }
+
+      await user.save();
+      return res.status(400).json({
+        success: false,
+        message: "Password Doesn't Match!",
       });
+    }
+
+    // Reset login attempts and lockUntil if login is successful
+    user.loginAttempts = 0;
+    user.lockUntil = 0;
+    await user.save();
+
+    // Generate JWT token
+    const token = jwt.sign(
+      {
+        id: user._id,
+        isAdmin: user.isAdmin,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' } // Optional: Set token expiration
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'User Logged in Successfully!',
+      token: token,
+      userData: user,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal Server Error',
+    });
   }
-}
+};
+
 
 const getCurrentUser = async (req, res) => {
     try {
