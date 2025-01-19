@@ -4,8 +4,11 @@ const Database = require('./database/database');
 const dotenv = require('dotenv');
 const cors = require('cors')
 const fileUpload = require('express-fileupload');
-const { options } = require('./routes/userRoutes');
 const app = express();
+const fs=require('fs');
+const path=require('path');
+
+const https=require("https");
 
 
 const corsOptions ={
@@ -27,7 +30,7 @@ app.use(express.static('./public'));
 
 dotenv.config()
 
-Database()
+Database();
 
 
 const PORT = process.env.PORT;
@@ -83,12 +86,17 @@ app.post("/khalti-api", async (req, res) => {
     }
 });
 
+const options={
+    key:fs.readFileSync(path.resolve(__dirname,'./keysforcw2/server.key')),
+    cert:fs.readFileSync(path.resolve(__dirname,'./keysforcw2/server.crt')),
+}
 
-
-
-app.listen(PORT, ()=>{
+//creating https
+https.createServer(options,app).listen(PORT,()=>{
     console.log(`Server is Running on port ${PORT} !`)
-}) 
+})
+
+
 
 
 module.exports = app;
