@@ -21,6 +21,17 @@ const createUser = async (req, res) => {
       });
   }
 
+  //password validation with 8 letter  number and one capital letter
+  const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
+  if (!passwordRegex.test(password)) {
+      return res.status(400).json({
+          success: false,
+          message: 'Password must be at least 8 characters long and contain a number, a lowercase letter, and an uppercase letter'
+      });
+  }
+  
+  
+
   try {
       const existingUserByEmail = await userModel.findOne({ email: email });
       const existingUserByPhone = await userModel.findOne({ phoneNumber: phoneNumber });
