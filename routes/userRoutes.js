@@ -1,13 +1,13 @@
 const router = require('express').Router();
 const userController = require('../controllers/userControllers')
-const { authGuard } = require('../middleware/authGuard');
+const { authGuard, verifyRecaptcha } = require('../middleware/authGuard');
 
 
 
 router.post('/create', userController.createUser)
 
 
-router.post('/login', userController.loginUser)
+router.post('/login',verifyRecaptcha, userController.loginUser)
 
 // current user
 router.get('/current', userController.getCurrentUser)
@@ -25,6 +25,8 @@ router.post('/profile_picture',userController.uploadProfilePicture);
 
 // update user details
 router.put('/update',authGuard, userController.editUserProfile);
+
+
 
 
 
