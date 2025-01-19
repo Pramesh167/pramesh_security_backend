@@ -26,8 +26,6 @@ router.post('/profile_picture',userController.uploadProfilePicture);
 // update user details
 router.put('/update',authGuard, userController.editUserProfile);
 
-// route to handle password reset
-router.post('/google', userController.googleLogin);
-router.post('/getGoogleUser', userController.getUserByGoogleEmail);
+
 
 module.exports = router
