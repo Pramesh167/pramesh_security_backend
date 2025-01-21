@@ -13,7 +13,48 @@ const speakeasy = require("speakeasy");
 const nodemailer = require("nodemailer");
 const ActivityLog = require("../models/activityLogModel");
 
+const generateToken = (userId) => {
+  return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
+    expiresIn: "24h",
+  });
+};
 
+//auto logout
+const refreshToken = async (req, res) => {
+  const { userId } = req.body;
+
+  if (!userId) {
+    return res.status(400).json({
+      success: false,
+      message: "User ID is required",
+    });
+  }
+
+  try {
+    const user = await userModel.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const newToken = generateToken(user._id);
+
+    res.status(200).json({
+      success: true,
+      message: "Token refreshed successfully",
+      token: newToken,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
 
 const createUser = async (req, res) => {
   console.log(req.body);
@@ -82,12 +123,7 @@ const createUser = async (req, res) => {
       });
   }
 }
-//to generate token
-const generateToken = (userId) => {
-  return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
-    expiresIn: "24h",
-  });
-};
+
 
 const verifyLoginOTP = async (req, res) => {
   const { email, otp } = req.body;
@@ -122,7 +158,8 @@ const verifyLoginOTP = async (req, res) => {
     const token = jwt.sign(
       {
         id: user._id,
-        isAdmin: user.isAdmin,
+
+        
       },
       process.env.JWT_SECRET
     );
@@ -221,7 +258,7 @@ const resendLoginOTP = async (req, res) => {
 };
 
 const loginUser = async (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
 
   const { email, password,otp } = req.body;
 
@@ -315,6 +352,8 @@ const loginUser = async (req, res) => {
           success: true,
           message: "OTP sent to your email",
           requireOTP: true,
+          userId: user._id,
+          
         });
       }
       //verifyotp
@@ -612,42 +651,7 @@ const editUserProfile = async (req, res) => {
 }
 
 
-//auto logout
-const refreshToken = async (req, res) => {
-  const { userId } = req.body;
 
-  if (!userId) {
-    return res.status(400).json({
-      success: false,
-      message: "User ID is required",
-    });
-  }
-
-  try {
-    const user = await userModel.findById(userId);
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-
-    const newToken = generateToken(user._id);
-
-    res.status(200).json({
-      success: true,
-      message: "Token refreshed successfully",
-      token: newToken,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
-  }
-};
 
 
 
