@@ -9,6 +9,9 @@ const User = require("../models/userModel");
 const fs = require('fs');
 const axios = require('axios'); 
 const { sendLoginOTP } = require("../service/auth");
+const speakeasy = require("speakeasy");
+const nodemailer = require("nodemailer");
+
 
 
 const createUser = async (req, res) => {
@@ -78,6 +81,12 @@ const createUser = async (req, res) => {
       });
   }
 }
+//to generate token
+const generateToken = (userId) => {
+  return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
+    expiresIn: "24h",
+  });
+};
 
 const verifyLoginOTP = async (req, res) => {
   const { email, otp } = req.body;
@@ -304,15 +313,7 @@ const loginUser = async (req, res) => {
     user.lockUntil = 0;
     await user.save();
 
-    // Generate JWT token
-    const token = jwt.sign(
-      {
-        id: user._id,
-        isAdmin: user.isAdmin,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: '1h' } // Optional: Set token expiration
-    );
+    const token = generateToken(user._id);
 
     return res.status(200).json({
       success: true,
@@ -328,6 +329,7 @@ const loginUser = async (req, res) => {
     });
   }
 };
+
 
 
 
@@ -592,6 +594,44 @@ const editUserProfile = async (req, res) => {
 }
 
 
+//auto logout
+const refreshToken = async (req, res) => {
+  const { userId } = req.body;
+
+  if (!userId) {
+    return res.status(400).json({
+      success: false,
+      message: "User ID is required",
+    });
+  }
+
+  try {
+    const user = await userModel.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const newToken = generateToken(user._id);
+
+    res.status(200).json({
+      success: true,
+      message: "Token refreshed successfully",
+      token: newToken,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+
 
 
   
@@ -606,7 +646,9 @@ module.exports = {
     editUserProfile,
     verifyLoginOTP,
     verifyRegisterOtp,
-    resendLoginOTP
+    resendLoginOTP,
+    generateToken,
+    refreshToken
 
 
 }

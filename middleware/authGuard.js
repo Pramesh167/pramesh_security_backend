@@ -2,60 +2,43 @@
 const userModel = require('../models/userModel');
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
-const authGuard= async (req, res, next) => {
-    //check incoming data
-    console.log(req.headers); // passed going to next
+const authGuard = async (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1];
 
+  if (!token) {
+    return res.status(401).json({
+      success: false,
+      message: "No token provided",
+    });
+  }
 
-    // get authorization data fromheader
-    const authHeader = req.headers.authorization;
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await userModel.findById(decoded.id).select("-password");
 
-    // check or validate
-    if (!authHeader) {
-        return res.status(400).json({
-            success: false,
-            message: "Auth header not found"
-        })
-    }
-
-
-    // Split the data(Format: Bearer token)
-    const token = authHeader.split(' ')[1];
-
-
-    // if token not found : stop the process (res)
-    if (!token || token ==="") {
-        return res.status(400).json({
-            success: false,
-            message: "Token not found"
-        })
-    }
-
-    // verify
-    try{
-        const decoded= jwt.verify(token, process.env.JWT_SECRET);
-        const user = await userModel.findById(decoded.id);
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found',
+        message: "User not found",
       });
     }
-    req.user = decoded;
-        next();
 
-    }catch(error){
-        res.status(500).json({
-            sucess: false,
-            message: "Not Authorized",
-        })
+    req.user = user;
+    next();
+  } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({
+        success: false,
+        message: "Token expired. Please log in again.",
+      });
     }
-    // if verified : next (function is controller)
+    res.status(500).json({
+      success: false,
+      message: "Not authorized",
+    });
+  }
+};
 
-
-
-    // not verified : not auth
-}
 
 // Admin guard
 const adminGuard= (req, res, next) => {

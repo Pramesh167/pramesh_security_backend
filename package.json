@@ -27,6 +27,7 @@
     "nodemailer": "^6.9.16",
     "nodemon": "^3.1.0",
     "react-router-dom": "^6.23.1",
+    "speakeasy": "^2.0.0",
     "supertest": "^7.0.0"
   },
   "description": ""

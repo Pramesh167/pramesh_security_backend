@@ -36,6 +36,8 @@ router.post('/verify_register_otp', userController.verifyRegisterOtp);
 //resend login otp
 router.post('/resend_login_otp', userController.resendLoginOTP);
 
+//refresh tokein
+router.post("/refresh-token", authGuard, userController.refreshToken);
 
 
 
