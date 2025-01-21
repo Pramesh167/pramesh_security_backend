@@ -13,7 +13,8 @@ router.get(
 
 // Delete a user (Admin only)
 router.delete(
-  "/user/:userId",
+  "/delete_user/:userId",
+
   adminGuard,
 
   activityController.deleteUser

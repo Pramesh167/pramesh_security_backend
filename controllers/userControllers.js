@@ -343,7 +343,7 @@ const loginUser = async (req, res) => {
     console.log(error);
     return res.status(500).json({
       success: false,
-      message: 'Internal Server Error',
+      message: 'You may have been blocked from robsell or its an server error',
     });
   }
 };
