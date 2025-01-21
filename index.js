@@ -53,6 +53,7 @@ app.use('/api/review', require('./routes/review&ratingRoutes'))
 app.use('/api/favourite', require('./routes/favouritesRoutes'))
 
 app.use('/api/khalti',  require('./routes/paymentRoutes'));
+app.use("/api/admin", require("./routes/activityRoute"));
 
 
 

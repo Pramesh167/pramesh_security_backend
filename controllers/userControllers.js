@@ -11,6 +11,7 @@ const axios = require('axios');
 const { sendLoginOTP } = require("../service/auth");
 const speakeasy = require("speakeasy");
 const nodemailer = require("nodemailer");
+const ActivityLog = require("../models/activityLogModel");
 
 
 
@@ -97,8 +98,14 @@ const verifyLoginOTP = async (req, res) => {
       loginOTP: otp,
       loginOTPExpires: { $gt: Date.now() },
     });
+
  
     if (!user) {
+      await ActivityLog.create({
+        user:null,
+        ipAddress:req.ip,
+        details:{email,reason:"Invalid or expired OTP"}
+      });
       return res.status(400).json({
         success: false,
         message: "Invalid or expired OTP",
@@ -229,11 +236,22 @@ const loginUser = async (req, res) => {
     const user = await User.findOne({ email: email });
 
     if (!user) {
+      await ActivityLog.create({
+        user:null,
+        ipAddress:req.ip,
+        details:{email,reason:"Email Doesn't Exist!"}
+      });
       return res.status(400).json({
         success: false,
         message: "Email Doesn't Exist!",
       });
     }
+    await ActivityLog.create({
+      user:user._id,
+      action:"Login",
+      ipAddress:req.ip,
+      details:{email}
+    })
 
     // if (!user.isVerified) {
     //   return res.status(403).json({
