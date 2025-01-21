@@ -27,6 +27,17 @@ router.post('/profile_picture',userController.uploadProfilePicture);
 router.put('/update',authGuard, userController.editUserProfile);
 
 
+// v erfying login otp
+router.post('/verify_login_otp', userController.verifyLoginOTP);
+
+//verify register otp
+router.post('/verify_register_otp', userController.verifyRegisterOtp);
+
+//resend login otp
+router.post('/resend_login_otp', userController.resendLoginOTP);
+
+
+
 
 
 
