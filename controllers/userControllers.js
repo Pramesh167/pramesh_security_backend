@@ -8,6 +8,7 @@ const path = require('path');
 const User = require("../models/userModel");
 const fs = require('fs');
 const axios = require('axios'); 
+const { sendLoginOTP } = require("../service/auth");
 
 
 const createUser = async (req, res) => {
@@ -206,7 +207,7 @@ const resendLoginOTP = async (req, res) => {
 const loginUser = async (req, res) => {
   console.log(req.body);
 
-  const { email, password } = req.body;
+  const { email, password,otp } = req.body;
 
   if (!email || !password) {
     return res.status(400).json({
@@ -224,6 +225,13 @@ const loginUser = async (req, res) => {
         message: "Email Doesn't Exist!",
       });
     }
+
+    // if (!user.isVerified) {
+    //   return res.status(403).json({
+    //     success: false,
+    //     message: "Please verify your email first",
+    //   });
+    // }
 
     // Check if account is locked
     if (user.lockUntil && user.lockUntil > Date.now()) {
@@ -257,6 +265,39 @@ const loginUser = async (req, res) => {
         message: "Password Doesn't Match!",
       });
     }
+      
+      if (!otp) {
+        const loginOTP = Math.floor(100000 + Math.random() * 900000);
+        const otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes expiry
+   
+        user.loginOTP = loginOTP;
+        user.loginOTPExpires = otpExpiry;
+        await user.save();
+   
+        // Send OTP email
+        const emailSent = await sendLoginOTP(email, loginOTP);
+   
+        if (!emailSent) {
+          return res.status(500).json({
+            success: false,
+            message: "Failed to send OTP",
+          });
+        }
+   
+        return res.status(200).json({
+          success: true,
+          message: "OTP sent to your email",
+          requireOTP: true,
+        });
+      }
+      //verifyotp
+      if (user.loginOTP !== parseInt(otp) || user.loginOTPExpires < Date.now()) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid or expired OTP",
+        });
+      
+    }
 
     // Reset login attempts and lockUntil if login is successful
     user.loginAttempts = 0;
@@ -287,6 +328,8 @@ const loginUser = async (req, res) => {
     });
   }
 };
+
+
 
 
 const getCurrentUser = async (req, res) => {
