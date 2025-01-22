@@ -10,3 +10,4 @@ const activityLogSchema = new mongoose.Schema({
 
 const ActivityLog = mongoose.model("ActivityLog", activityLogSchema);
 module.exports = ActivityLog;
+
