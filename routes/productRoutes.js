@@ -12,7 +12,7 @@ router.get('/get_all_products', authGuard, productController.getAllProducts);
 router.get('/get_products_by_category', productController.getProductsByCategory);
 
 // Delete a product (protected route with adminGuard middleware)
-router.delete('/delete_product/:id', adminGuard, productController.deleteProduct);
+router.delete('/delete_product/:id',  productController.deleteProduct);
 
 // Update a product
 router.put('/update_product/:id', productController.updateProduct);
