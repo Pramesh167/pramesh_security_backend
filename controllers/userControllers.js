@@ -312,8 +312,8 @@ const loginUser = async (req, res) => {
       // Increment login attempts
       user.loginAttempts = (user.loginAttempts || 0) + 1;
 
-      // Lock account if attempts exceed 2
-      if (user.loginAttempts >= 2) {
+      // Lock account if attempts exceed 10
+      if (user.loginAttempts >= 10) {
         user.lockUntil = Date.now() + 5 * 60 * 1000; // Lock for 5 minutes
         await user.save();
 

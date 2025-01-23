@@ -9,7 +9,7 @@ const router = require('express').Router();
 router.post('/add_to_cart',authGuard,cartController.addToCart);
 
 // Remove a product from the cart
-router.delete('/remove_cart_item/:id', authGuard, cartController.removeFromCart);
+router.put('/remove_cart_item/:id', cartController.removeFromCart);
 
 
 
