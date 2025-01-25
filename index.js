@@ -11,7 +11,12 @@ const path=require('path');
 const https=require("https");
 const hpp=require('hpp');
 
-const helmet=require('helmet');
+const csrf=require('csurf');
+const cookieParser=require('cookie-parser');
+
+app.use(cookieParser());
+
+const csrfProtection=csrf({cookie:true});
 
 
 
@@ -74,7 +79,17 @@ app.use('/api/favourite', require('./routes/favouritesRoutes'))
 app.use('/api/khalti',  require('./routes/paymentRoutes'));
 app.use("/api/admin", require("./routes/activityRoute"));
 
-
+app.get("/api/csrf-token", csrfProtection, (req, res) => {
+    res.json({ csrfToken: req.csrfToken() });
+  });
+  
+  app.use((err, req, res, next) => {
+    if (err.code === "EBADCSRFTOKEN") {
+      res.status(403).json({ success: false, message: "Invalid CSRF token" });
+    } else {
+      next(err);
+    }
+  });
 
 app.post("/khalti-api", async (req, res) => {
     try {
