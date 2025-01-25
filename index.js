@@ -9,6 +9,24 @@ const fs=require('fs');
 const path=require('path');
 
 const https=require("https");
+const hpp=require('hpp');
+
+const helmet=require('helmet');
+
+
+
+// app.use(
+//     helmet({
+//       contentSecurityPolicy: {
+//         directives: {
+//           defaultSrc: ["'self'"],
+//           scriptSrc: ["'self'", "trusted-cdn.com"],
+//           styleSrc: ["'self'", "fonts.googleapis.com"],
+//           imgSrc: ["'self'", "data:", "trusted-cdn.com"],
+//         },
+//       },
+//     })
+//   );
 
 
 const corsOptions ={
@@ -26,7 +44,8 @@ app.use(fileUpload());
 
 app.use(express.static('./public'));
 
-
+// prevention of https parameter pollution || hpp
+app.use(hpp());
 
 dotenv.config()
 
@@ -36,7 +55,7 @@ Database();
 const PORT = process.env.PORT;
 
 app.get('/Robsell',(req,res)=>{
-    res.send('Test API is Working!....')
+    res.send('Kaam garxa backend api !')
 }) 
 
 

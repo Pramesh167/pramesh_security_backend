@@ -3,37 +3,41 @@ const productModel = require("../models/productModel");
 const fs = require("fs");
 
 const createProduct = async (req, res) => {
-  console.log(req.body);
-  console.log(req.files);
-
+  // Destructuring the body
   const {
     productName,
-    productPrice,
     productCategory,
     productDescription,
+    productPrice,
     productQuantity,
   } = req.body;
 
+  // Sanitize input to handle duplicate parameters
+  const sanitizedProductName = Array.isArray(productName) ? productName[0] : productName;
+  const sanitizedProductCategory = Array.isArray(productCategory) ? productCategory[0] : productCategory;
+  const sanitizedProductDescription = Array.isArray(productDescription) ? productDescription[0] : productDescription;
+  const sanitizedProductPrice = Array.isArray(productPrice) ? parseFloat(productPrice[0]) : parseFloat(productPrice);
+  const sanitizedProductQuantity = Array.isArray(productQuantity) ? parseInt(productQuantity[0]) : parseInt(productQuantity);
+
+  // Validate the data
   if (
-    (!productName || !productPrice || !productCategory || !productDescription,
-    !productQuantity)
+    !sanitizedProductName || 
+    !sanitizedProductCategory || 
+    !sanitizedProductDescription || 
+    isNaN(sanitizedProductPrice) || 
+    isNaN(sanitizedProductQuantity)
   ) {
     return res.status(400).json({
       success: false,
-      message: "Please enter all details!",
+      message: "Please enter all fields!",
     });
   }
-  //validate price and quantity
-  if(productPrice <0 ){
+
+  // Validate that price and quantity are not negative
+  if (sanitizedProductPrice < 0 || sanitizedProductQuantity < 0) {
     return res.status(400).json({
       success: false,
-      message: "Please enter a valid price!",
-    });
-  }
-  if(productQuantity <0 ){
-    return res.status(400).json({
-      success: false,
-      message: "Please enter a valid quantity!",
+      message: "Price and quantity cannot be negative!",
     });
   }
 
@@ -289,26 +293,99 @@ const getProductsByCategory = async (req, res) => {
   }
 };
 
-// search products by name
+// // search products by name
+// const searchProductsByName = async (req, res) => {
+//   const search = req.query.search || "";
+//   const pageNo = parseInt(req.query.page) || 1;
+//   const limit = parseInt(req.query.limit) || 10;
+
+//   try {
+//     // Build the query conditionally based on the search term
+//     const query = { productName: { $regex: search, $options: "i" } };
+
+//     // Fetch the products and the total count
+//     const [products, totalProducts] = await Promise.all([
+//       productModel
+//         .find(query)
+//         .skip((pageNo - 1) * limit)
+//         .limit(limit),
+//       productModel.countDocuments(query),
+//     ]);
+
+//     // If no products are found, return an appropriate response
+//     if (!products || products.length === 0) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "No products found for this search",
+//       });
+//     }
+
+//     // Return the products along with the total count for pagination purposes
+//     res.status(200).json({
+//       success: true,
+//       message: "Products fetched successfully by search",
+//       products: products,
+//       totalProducts: totalProducts,
+//       currentPage: pageNo,
+//       totalPages: Math.ceil(totalProducts / limit),
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({
+//       success: false,
+//       message: "Internal server error",
+//       error: error.message,
+//     });
+//   }
+// };
+
 const searchProductsByName = async (req, res) => {
-  const search = req.query.search || "";
-  const pageNo = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
+  // Step 1: Get the search query from the request
+  const search = req.query.search;
+
+  // Step 2: If no search parameter is provided, return immediately without a response
+  if (!search) {
+    return res.status(400).json({
+      success: false,
+      message: "Search query parameter 'search' is required.",
+    });
+  }
+
+  // Step 3: Validate and sanitize the input
+  if (typeof search !== "string") {
+    return res.status(400).json({
+      success: false,
+      message: "Search query must be a string.",
+    });
+  }
+
+  // Sanitize the input to remove special characters
+  const sanitizedQuery = search.replace(/[^\w\s]/gi, "");
+
+  if (!sanitizedQuery) {
+    return res.status(400).json({
+      success: false,
+      message:
+        "Invalid search input. Only alphanumeric characters and spaces are allowed.",
+    });
+  }
+
+  // Step 4: Limit the input length to prevent abuse
+  if (sanitizedQuery.length > 100) {
+    return res.status(400).json({
+      success: false,
+      message: "Search query is too long. Maximum length is 100 characters.",
+    });
+  }
 
   try {
-    // Build the query conditionally based on the search term
-    const query = { productName: { $regex: search, $options: "i" } };
+    // Step 5: Build the query based on the sanitized search term
+    const query = { productName: { $regex: sanitizedQuery, $options: "i" } };
 
-    // Fetch the products and the total count
-    const [products, totalProducts] = await Promise.all([
-      productModel
-        .find(query)
-        .skip((pageNo - 1) * limit)
-        .limit(limit),
-      productModel.countDocuments(query),
-    ]);
+    // Step 6: Fetch the products
+    const products = await productModel.find(query);
 
-    // If no products are found, return an appropriate response
+    // Step 7: If no products are found, return an appropriate response
     if (!products || products.length === 0) {
       return res.status(404).json({
         success: false,
@@ -316,14 +393,11 @@ const searchProductsByName = async (req, res) => {
       });
     }
 
-    // Return the products along with the total count for pagination purposes
+    // Step 8: Return the products
     res.status(200).json({
       success: true,
       message: "Products fetched successfully by search",
       products: products,
-      totalProducts: totalProducts,
-      currentPage: pageNo,
-      totalPages: Math.ceil(totalProducts / limit),
     });
   } catch (error) {
     console.error(error);
